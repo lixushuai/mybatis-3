@@ -1,23 +1,24 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.parsing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.ibatis.io.Resources;
 import org.junit.jupiter.api.Test;
@@ -35,12 +36,22 @@ class XPathParserTest {
       assertEquals((Float) 5.8f, parser.evalFloat("/employee/height"));
       assertEquals((Double) 5.8d, parser.evalDouble("/employee/height"));
       assertEquals("${id_var}", parser.evalString("/employee/@id"));
+
+      //System.out.println(parser.evalString("/employee/@id"));
+      System.out.println(parser.evalString("/employee/blah/@something"));
+
       assertEquals(Boolean.TRUE, parser.evalBoolean("/employee/active"));
       assertEquals("<id>${id_var}</id>", parser.evalNode("/employee/@id").toString().trim());
+      List<XNode> xNodes = parser.evalNodes("/employee/*");
+
       assertEquals(7, parser.evalNodes("/employee/*").size());
       XNode node = parser.evalNode("/employee/height");
+
       assertEquals("employee/height", node.getPath());
       assertEquals("employee[${id_var}]_height", node.getValueBasedIdentifier());
+
+      XNode xNode = parser.evalNode("/employee/first_name");
+      System.out.println(xNode.getStringBody());
     }
   }
 

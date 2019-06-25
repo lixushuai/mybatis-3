@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.type;
 
@@ -27,11 +27,16 @@ import org.apache.ibatis.io.Resources;
 
 /**
  * @author Clinton Begin
+ * 未知类型处理器
  */
 public class UnknownTypeHandler extends BaseTypeHandler<Object> {
-
+  /**
+   * 单利的ObjectTypeHandler类型处理器
+   */
   private static final ObjectTypeHandler OBJECT_TYPE_HANDLER = new ObjectTypeHandler();
-
+  /**
+   * TypeHandler 注册表
+   */
   private TypeHandlerRegistry typeHandlerRegistry;
 
   public UnknownTypeHandler(TypeHandlerRegistry typeHandlerRegistry) {
@@ -40,21 +45,21 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
-      throws SQLException {
+    throws SQLException {
     TypeHandler handler = resolveTypeHandler(parameter, jdbcType);
     handler.setParameter(ps, i, parameter, jdbcType);
   }
 
   @Override
   public Object getNullableResult(ResultSet rs, String columnName)
-      throws SQLException {
+    throws SQLException {
     TypeHandler<?> handler = resolveTypeHandler(rs, columnName);
     return handler.getResult(rs, columnName);
   }
 
   @Override
   public Object getNullableResult(ResultSet rs, int columnIndex)
-      throws SQLException {
+    throws SQLException {
     TypeHandler<?> handler = resolveTypeHandler(rs.getMetaData(), columnIndex);
     if (handler == null || handler instanceof UnknownTypeHandler) {
       handler = OBJECT_TYPE_HANDLER;
@@ -64,7 +69,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
   @Override
   public Object getNullableResult(CallableStatement cs, int columnIndex)
-      throws SQLException {
+    throws SQLException {
     return cs.getObject(columnIndex);
   }
 
@@ -84,13 +89,13 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
   private TypeHandler<?> resolveTypeHandler(ResultSet rs, String column) {
     try {
-      Map<String,Integer> columnIndexLookup;
+      Map<String, Integer> columnIndexLookup;
       columnIndexLookup = new HashMap<>();
       ResultSetMetaData rsmd = rs.getMetaData();
       int count = rsmd.getColumnCount();
       for (int i = 1; i <= count; i++) {
         String name = rsmd.getColumnName(i);
-        columnIndexLookup.put(name,i);
+        columnIndexLookup.put(name, i);
       }
       Integer columnIndex = columnIndexLookup.get(column);
       TypeHandler<?> handler = null;

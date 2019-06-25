@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.reflection;
 
@@ -45,24 +45,73 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
  * @author Clinton Begin
  */
 public class Reflector {
-
+  /**
+   * 对应的类
+   */
   private final Class<?> type;
+  /**
+   * 可读属性数组
+   */
   private final String[] readablePropertyNames;
+  /**
+   * 可写属性集合
+   */
   private final String[] writablePropertyNames;
+  /**
+   * 属性对应的 setting 方法的映射。
+   * <p>
+   * key 为属性名称
+   * value 为 Invoker 对象
+   */
   private final Map<String, Invoker> setMethods = new HashMap<>();
+  /**
+   * 属性对应的 getting 方法的映射。
+   * <p>
+   * key 为属性名称
+   * value 为 Invoker 对象
+   */
   private final Map<String, Invoker> getMethods = new HashMap<>();
-  private final Map<String, Class<?>> setTypes = new HashMap<>();
-  private final Map<String, Class<?>> getTypes = new HashMap<>();
-  private Constructor<?> defaultConstructor;
 
+  /**
+   * 属性对应的 setting 方法的方法参数类型的映射。{@link #setMethods}
+   * <p>
+   * key 为属性名称
+   * value 为方法参数类型
+   */
+  private final Map<String, Class<?>> setTypes = new HashMap<>();
+  /**
+   * 属性对应的 getting 方法的返回值类型的映射。{@link #getMethods}
+   * <p>
+   * key 为属性名称
+   * value 为返回值的类型
+   */
+  private final Map<String, Class<?>> getTypes = new HashMap<>();
+  /**
+   * 默认构造方法
+   */
+  private Constructor<?> defaultConstructor;
+  /**
+   * 不区分大小写的属性集合
+   */
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
+  /**
+   * 构造器初始化属性
+   *
+   * @param clazz
+   */
   public Reflector(Class<?> clazz) {
+    // 设置对应的类
     type = clazz;
+    // <1> 初始化 defaultConstructor(默认无参构造器)
     addDefaultConstructor(clazz);
+    // <2> 初始化 getMethods 和 getTypes ，通过遍历 getting 方法
     addGetMethods(clazz);
+    // <3> 初始化 setMethods 和 setTypes ，通过遍历 setting 方法。
     addSetMethods(clazz);
+    // <4> 初始化 getMethods + getTypes 和 setMethods + setTypes ，通过遍历 fields 属性。
     addFields(clazz);
+    // <5> 初始化 readablePropertyNames、writeablePropertyNames、caseInsensitivePropertyMap 属性
     readablePropertyNames = getMethods.keySet().toArray(new String[getMethods.keySet().size()]);
     writablePropertyNames = setMethods.keySet().toArray(new String[setMethods.keySet().size()]);
     for (String propName : readablePropertyNames) {
@@ -73,17 +122,33 @@ public class Reflector {
     }
   }
 
+  /**
+   * 初始化默认无参构造器
+   *
+   * @param clazz
+   */
   private void addDefaultConstructor(Class<?> clazz) {
+    // 获取所有构造器集合
     Constructor<?>[] consts = clazz.getDeclaredConstructors();
+    // 遍历构造器
     for (Constructor<?> constructor : consts) {
+      // 如果构造器参数为0 证明是默认构造器
       if (constructor.getParameterTypes().length == 0) {
+        // 赋值给默认构造器
         this.defaultConstructor = constructor;
       }
     }
   }
 
+  /**
+   * 添加get方法
+   *
+   * @param cls
+   */
   private void addGetMethods(Class<?> cls) {
+    // 初始化集合
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
+    //  获取所有方法
     Method[] methods = getClassMethods(cls);
     for (Method method : methods) {
       if (method.getParameterTypes().length > 0) {
@@ -91,7 +156,7 @@ public class Reflector {
       }
       String name = method.getName();
       if ((name.startsWith("get") && name.length() > 3)
-          || (name.startsWith("is") && name.length() > 2)) {
+        || (name.startsWith("is") && name.length() > 2)) {
         name = PropertyNamer.methodToProperty(name);
         addMethodConflict(conflictingGetters, name, method);
       }
@@ -113,9 +178,9 @@ public class Reflector {
         if (candidateType.equals(winnerType)) {
           if (!boolean.class.equals(candidateType)) {
             throw new ReflectionException(
-                "Illegal overloaded getter method with ambiguous type for property "
-                    + propName + " in class " + winner.getDeclaringClass()
-                    + ". This breaks the JavaBeans specification and can cause unpredictable results.");
+              "Illegal overloaded getter method with ambiguous type for property "
+                + propName + " in class " + winner.getDeclaringClass()
+                + ". This breaks the JavaBeans specification and can cause unpredictable results.");
           } else if (candidate.getName().startsWith("is")) {
             winner = candidate;
           }
@@ -125,9 +190,9 @@ public class Reflector {
           winner = candidate;
         } else {
           throw new ReflectionException(
-              "Illegal overloaded getter method with ambiguous type for property "
-                  + propName + " in class " + winner.getDeclaringClass()
-                  + ". This breaks the JavaBeans specification and can cause unpredictable results.");
+            "Illegal overloaded getter method with ambiguous type for property "
+              + propName + " in class " + winner.getDeclaringClass()
+              + ". This breaks the JavaBeans specification and can cause unpredictable results.");
         }
       }
       addGetMethod(propName, winner);
@@ -205,8 +270,8 @@ public class Reflector {
       return setter1;
     }
     throw new ReflectionException("Ambiguous setters defined for property '" + property + "' in class '"
-        + setter2.getDeclaringClass() + "' with types '" + paramType1.getName() + "' and '"
-        + paramType2.getName() + "'.");
+      + setter2.getDeclaringClass() + "' with types '" + paramType1.getName() + "' and '"
+      + paramType2.getName() + "'.");
   }
 
   private void addSetMethod(String name, Method method) {
@@ -287,11 +352,14 @@ public class Reflector {
    *
    * @param cls The class
    * @return An array containing all methods in this class
+   * 获取所有方法列表
    */
   private Method[] getClassMethods(Class<?> cls) {
+    // 初始化一个唯一方法集合
     Map<String, Method> uniqueMethods = new HashMap<>();
     Class<?> currentClass = cls;
     while (currentClass != null && currentClass != Object.class) {
+      // 添加公开并且唯一的方法
       addUniqueMethods(uniqueMethods, currentClass.getDeclaredMethods());
 
       // we also need to look for interface methods -
@@ -309,19 +377,36 @@ public class Reflector {
     return methods.toArray(new Method[methods.size()]);
   }
 
+  /**
+   * 添加唯一方法，像一个集合中
+   *
+   * @param uniqueMethods
+   * @param methods
+   */
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
+    // 遍历所有方法
     for (Method currentMethod : methods) {
+      // 判断此方法是否是桥方法
       if (!currentMethod.isBridge()) {
+        //获得处理后的方法名
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
         // if it is known, then an extended class must have
         // overridden a method
+        // 添加方法
         if (!uniqueMethods.containsKey(signature)) {
           uniqueMethods.put(signature, currentMethod);
         }
       }
     }
   }
+
+  /**
+   * 处理方法名
+   *
+   * @param method
+   * @return
+   */
 
   private String getSignature(Method method) {
     StringBuilder sb = new StringBuilder();
