@@ -2103,7 +2103,7 @@ SELECT * FROM POST WHERE BLOG_ID = #{id}]]></source>
         <p>
           回想一下上一节的内容，对某一命名空间的语句，只会使用该命名空间的缓存进行缓存或刷新。
           但你可能会想要在多个命名空间中共享相同的缓存配置和实例。要实现这种需求，你可以使用
-          cache-ref 元素来引用另一个缓存。
+          元素来引用另一个缓存。
         </p>
 
         <source><![CDATA[<cache-ref namespace="com.someone.application.data.SomeMapper"/>]]></source>

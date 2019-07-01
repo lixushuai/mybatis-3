@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.io;
 
@@ -31,12 +31,13 @@ import org.apache.ibatis.logging.LogFactory;
  * Provides a very simple API for accessing resources within an application server.
  *
  * @author Ben Gunter
+ * ，虚拟文件系统( Virtual File System )抽象类，用来查找指定路径下的的文件们
  */
 public abstract class VFS {
   private static final Log log = LogFactory.getLog(VFS.class);
 
   /** The built-in implementations. */
-  public static final Class<?>[] IMPLEMENTATIONS = { JBoss6VFS.class, DefaultVFS.class };
+  public static final Class<?>[] IMPLEMENTATIONS = {JBoss6VFS.class, DefaultVFS.class};
 
   /** The list to which implementations are added by {@link #addImplClass(Class)}. */
   public static final List<Class<? extends VFS>> USER_IMPLEMENTATIONS = new ArrayList<>();
@@ -61,7 +62,7 @@ public abstract class VFS {
           if (vfs == null || !vfs.isValid()) {
             if (log.isDebugEnabled()) {
               log.debug("VFS implementation " + impl.getName() +
-                  " is not valid in this environment.");
+                " is not valid in this environment.");
             }
           }
         } catch (InstantiationException | IllegalAccessException e) {
@@ -145,7 +146,7 @@ public abstract class VFS {
    */
   @SuppressWarnings("unchecked")
   protected static <T> T invoke(Method method, Object object, Object... parameters)
-      throws IOException, RuntimeException {
+    throws IOException, RuntimeException {
     try {
       return (T) method.invoke(object, parameters);
     } catch (IllegalArgumentException | IllegalAccessException e) {

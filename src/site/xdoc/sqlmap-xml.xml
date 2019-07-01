@@ -2223,7 +2223,7 @@ SELECT * FROM POST WHERE BLOG_ID = #{id}]]></source>
           Recall from the previous section that only the cache for this particular namespace will be used or
           flushed for statements within the same namespace. There may come a time when you want to share the
           same cache configuration and instance between namespaces. In such cases you can reference another
-          cache by using the cache-ref element.
+          cache by using the element.
         </p>
 
         <source><![CDATA[<cache-ref namespace="com.someone.application.data.SomeMapper"/>]]></source>

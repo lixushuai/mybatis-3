@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.io;
 
@@ -22,10 +22,21 @@ import java.net.URL;
  * A class to wrap access to multiple class loaders making them work as one
  *
  * @author Clinton Begin
+ * <p>
+ * ClassLoader 包装器。
+ * 可使用多个 ClassLoader 加载对应的资源，
+ * 直到有一成功后返回资源
  */
 public class ClassLoaderWrapper {
 
+  /**
+   * 默认 ClassLoader 对象
+   */
   ClassLoader defaultClassLoader;
+
+  /**
+   * 系统 ClassLoader 对象
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
@@ -52,6 +63,7 @@ public class ClassLoaderWrapper {
    * @param resource    - the resource to find
    * @param classLoader - the first classloader to try
    * @return the stream or null
+   * getResourceAsURL
    */
   public URL getResourceAsURL(String resource, ClassLoader classLoader) {
     return getResourceAsURL(resource, getClassLoaders(classLoader));
@@ -62,6 +74,8 @@ public class ClassLoaderWrapper {
    *
    * @param resource - the resource to find
    * @return the stream or null
+   * <p>
+   * 获得指定资源的 InputStream 对象
    */
   public InputStream getResourceAsStream(String resource) {
     return getResourceAsStream(resource, getClassLoaders(null));
@@ -73,6 +87,7 @@ public class ClassLoaderWrapper {
    * @param resource    - the resource to find
    * @param classLoader - the first class loader to try
    * @return the stream or null
+   * 获得指定资源的 InputStream 对象
    */
   public InputStream getResourceAsStream(String resource, ClassLoader classLoader) {
     return getResourceAsStream(resource, getClassLoaders(classLoader));
@@ -107,6 +122,7 @@ public class ClassLoaderWrapper {
    * @param resource    - the resource to get
    * @param classLoader - the classloaders to examine
    * @return the resource or null
+   * 获得指定资源的 InputStream 对象
    */
   InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
     for (ClassLoader cl : classLoader) {
@@ -134,21 +150,24 @@ public class ClassLoaderWrapper {
    * @param resource    - the resource to locate
    * @param classLoader - the class loaders to examine
    * @return the resource or null
+   * 获得指定资源的 URL
    */
   URL getResourceAsURL(String resource, ClassLoader[] classLoader) {
 
     URL url;
-
+    // 遍历 ClassLoader 数组
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
 
         // look for the resource as passed in...
+        // 获得 URL ，不带 /
         url = cl.getResource(resource);
 
         // ...but some class loaders want this leading "/", so we'll add it
         // and try again if we didn't find the resource
         if (null == url) {
+          // 获得 URL ，带 /
           url = cl.getResource("/" + resource);
         }
 
@@ -173,7 +192,10 @@ public class ClassLoaderWrapper {
    * @param name        - the class to load
    * @param classLoader - the group of classloaders to examine
    * @return the class
-   * @throws ClassNotFoundException - Remember the wisdom of Judge Smails: Well, the world needs ditch diggers, too.
+   * @throws ClassNotFoundException -
+   *                                Remember the wisdom of Judge Smails:
+   *                                Well, the world needs ditch diggers, too.
+   *                                获得指定类名对应的类
    */
   Class<?> classForName(String name, ClassLoader[] classLoader) throws ClassNotFoundException {
 
@@ -201,13 +223,19 @@ public class ClassLoaderWrapper {
 
   }
 
+  /**
+   * ，获得 ClassLoader 数组。
+   *
+   * @param classLoader
+   * @return
+   */
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
-        classLoader,
-        defaultClassLoader,
-        Thread.currentThread().getContextClassLoader(),
-        getClass().getClassLoader(),
-        systemClassLoader};
+      classLoader,
+      defaultClassLoader,
+      Thread.currentThread().getContextClassLoader(),
+      getClass().getClassLoader(),
+      systemClassLoader};
   }
 
 }

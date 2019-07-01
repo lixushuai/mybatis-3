@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.binding;
 
@@ -43,17 +43,44 @@ import org.apache.ibatis.session.SqlSession;
  * @author Eduardo Macarron
  * @author Lasse Voss
  * @author Kazuki Shimizu
+ * 我们知道Mapper，通过MapperProxy代理类执行他的接口方法，
+ * 当mapper方法被调用的时候对应的MapperProxy会生成相应的MapperMethod并且会缓存起来，
+ * 这样当多次调用同一个mapper方法时候只会生成一个MapperMethod，提高了时间和内存效率：
+ * <p>
+ * <p>
+ * 我们执行所调用Mapper的每一个接口方法，最后返回的是MapperMethod.execute方法。
+ * 每一个MapperMethod对应了一个mapper文件中配置的一个sql语句或FLUSH配置，
+ * 对应的sql语句通过mapper对应的class文件名+方法名从Configuration对象中获得。
  */
 public class MapperMethod {
-
+  /**
+   * SqlCommand 对象
+   * 一个内部封 封装了SQL标签的类型
+   * insert update delete select
+   */
   private final SqlCommand command;
+  /**
+   * MethodSignature 对象
+   * <p>
+   * 一个内部类 封装了方法的参数信息 返回类型信息等
+   */
   private final MethodSignature method;
 
+  /**
+   * 构造器
+   *
+   * @param mapperInterface
+   * @param method
+   * @param config
+   */
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
     this.command = new SqlCommand(config, mapperInterface, method);
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * 这个方法是对SqlSession的包装，对应insert、delete、update、select四种操作
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -86,7 +113,7 @@ public class MapperMethod {
           Object param = method.convertArgsToSqlCommandParam(args);
           result = sqlSession.selectOne(command.getName(), param);
           if (method.returnsOptional()
-              && (result == null || !method.getReturnType().equals(result.getClass()))) {
+            && (result == null || !method.getReturnType().equals(result.getClass()))) {
             result = Optional.ofNullable(result);
           }
         }
@@ -99,7 +126,7 @@ public class MapperMethod {
     }
     if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
       throw new BindingException("Mapper method '" + command.getName()
-          + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
     }
     return result;
   }
@@ -111,7 +138,7 @@ public class MapperMethod {
     } else if (Integer.class.equals(method.getReturnType()) || Integer.TYPE.equals(method.getReturnType())) {
       result = rowCount;
     } else if (Long.class.equals(method.getReturnType()) || Long.TYPE.equals(method.getReturnType())) {
-      result = (long)rowCount;
+      result = (long) rowCount;
     } else if (Boolean.class.equals(method.getReturnType()) || Boolean.TYPE.equals(method.getReturnType())) {
       result = rowCount > 0;
     } else {
@@ -123,10 +150,10 @@ public class MapperMethod {
   private void executeWithResultHandler(SqlSession sqlSession, Object[] args) {
     MappedStatement ms = sqlSession.getConfiguration().getMappedStatement(command.getName());
     if (!StatementType.CALLABLE.equals(ms.getStatementType())
-        && void.class.equals(ms.getResultMaps().get(0).getType())) {
+      && void.class.equals(ms.getResultMaps().get(0).getType())) {
       throw new BindingException("method " + command.getName()
-          + " needs either a @ResultMap annotation, a @ResultType annotation,"
-          + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
+        + " needs either a @ResultMap annotation, a @ResultType annotation,"
+        + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
     }
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
@@ -136,6 +163,7 @@ public class MapperMethod {
       sqlSession.select(command.getName(), param, method.extractResultHandler(args));
     }
   }
+
 
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
@@ -186,7 +214,7 @@ public class MapperMethod {
       }
       return array;
     } else {
-      return list.toArray((E[])array);
+      return list.toArray((E[]) array);
     }
   }
 
@@ -216,23 +244,34 @@ public class MapperMethod {
 
   }
 
+  /**
+   *
+   */
   public static class SqlCommand {
-
+    /**
+     * 执行方法的的接口全类名和执行方法的方法名
+     */
     private final String name;
+    /**
+     * Sql类型 | SELESE|INSERT...
+     */
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
+      // 方法名
       final String methodName = method.getName();
+      //方法 返回表示声明由此Method对象表示的方法的类的Class对象
       final Class<?> declaringClass = method.getDeclaringClass();
+
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
-          configuration);
+        configuration);
       if (ms == null) {
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
         } else {
           throw new BindingException("Invalid bound statement (not found): "
-              + mapperInterface.getName() + "." + methodName);
+            + mapperInterface.getName() + "." + methodName);
         }
       } else {
         name = ms.getId();
@@ -252,7 +291,7 @@ public class MapperMethod {
     }
 
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
-        Class<?> declaringClass, Configuration configuration) {
+                                                   Class<?> declaringClass, Configuration configuration) {
       String statementId = mapperInterface.getName() + "." + methodName;
       if (configuration.hasStatement(statementId)) {
         return configuration.getMappedStatement(statementId);
@@ -262,7 +301,7 @@ public class MapperMethod {
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName,
-              declaringClass, configuration);
+            declaringClass, configuration);
           if (ms != null) {
             return ms;
           }
@@ -351,6 +390,7 @@ public class MapperMethod {
 
     /**
      * return whether return type is {@code java.util.Optional}.
+     *
      * @return return {@code true}, if return type is {@code java.util.Optional}
      * @since 3.5.0
      */

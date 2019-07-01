@@ -168,13 +168,13 @@ public class CacheBuilder {
               || Boolean.class == type) {
             metaCache.setValue(name, Boolean.valueOf(value));
           } else if (double.class == type
-              || Double.class == type) {
-            metaCache.setValue(name, Double.valueOf(value));
-          } else {
-            throw new CacheException("Unsupported property type for cache: '" + name + "' of type " + type);
-          }
-        }
-      }
+          || Double.class == type) {
+          metaCache.setValue(name, Double.valueOf(value));
+    } else {
+      throw new CacheException("Unsupported property type for cache: '" + name + "' of type " + type);
+    }
+  }
+}
     }
     if (InitializingObject.class.isAssignableFrom(cache.getClass())) {
       try {

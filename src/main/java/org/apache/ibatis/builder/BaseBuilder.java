@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.builder;
 
@@ -32,37 +32,90 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+  /**
+   * mybatis配置信息
+   */
   protected final Configuration configuration;
+  /**
+   * 类型别名注册表
+   */
   protected final TypeAliasRegistry typeAliasRegistry;
+  /**
+   * 类型转换注册表
+   */
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
+  /**
+   * 构造器
+   *
+   * @param configuration
+   */
   public BaseBuilder(Configuration configuration) {
     this.configuration = configuration;
     this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
     this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
   }
 
+  /**
+   * get 方法
+   *
+   * @return
+   */
   public Configuration getConfiguration() {
     return configuration;
   }
 
+  /**
+   * 正则表达式
+   *
+   * @param regex
+   * @param defaultValue
+   * @return
+   */
   protected Pattern parseExpression(String regex, String defaultValue) {
     return Pattern.compile(regex == null ? defaultValue : regex);
   }
 
+  /**
+   * 字符串转换成Boolean类型
+   *
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Boolean booleanValueOf(String value, Boolean defaultValue) {
     return value == null ? defaultValue : Boolean.valueOf(value);
   }
 
+  /**
+   * 字符串解析成Integer类型
+   *
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Integer integerValueOf(String value, Integer defaultValue) {
     return value == null ? defaultValue : Integer.valueOf(value);
   }
 
+  /**
+   * 返回字符串集合
+   *
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Set<String> stringSetValueOf(String value, String defaultValue) {
-    value = value == null ? defaultValue : value;
+    value = (value == null ? defaultValue : value);
     return new HashSet<>(Arrays.asList(value.split(",")));
   }
 
+  /**
+   * 解析对应的 JdbcType 类型
+   *
+   * @param alias
+   * @return
+   */
   protected JdbcType resolveJdbcType(String alias) {
     if (alias == null) {
       return null;
@@ -74,6 +127,12 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 解析对应的 ResultSetType 类型
+   *
+   * @param alias
+   * @return
+   */
   protected ResultSetType resolveResultSetType(String alias) {
     if (alias == null) {
       return null;
@@ -85,6 +144,12 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 解析对应的 ParameterMode 类型
+   *
+   * @param alias
+   * @return
+   */
   protected ParameterMode resolveParameterMode(String alias) {
     if (alias == null) {
       return null;
@@ -95,6 +160,7 @@ public abstract class BaseBuilder {
       throw new BuilderException("Error resolving ParameterMode. Cause: " + e, e);
     }
   }
+
 
   protected Object createInstance(String alias) {
     Class<?> clazz = resolveClass(alias);
@@ -128,7 +194,7 @@ public abstract class BaseBuilder {
       throw new BuilderException("Type " + type.getName() + " is not a valid TypeHandler because it does not implement TypeHandler interface");
     }
     @SuppressWarnings("unchecked") // already verified it is a TypeHandler
-    Class<? extends TypeHandler<?>> typeHandlerType = (Class<? extends TypeHandler<?>>) type;
+      Class<? extends TypeHandler<?>> typeHandlerType = (Class<? extends TypeHandler<?>>) type;
     return resolveTypeHandler(javaType, typeHandlerType);
   }
 
