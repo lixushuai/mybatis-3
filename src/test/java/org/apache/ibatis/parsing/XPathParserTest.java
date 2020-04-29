@@ -17,7 +17,12 @@ package org.apache.ibatis.parsing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.ibatis.io.Resources;
@@ -54,5 +59,20 @@ class XPathParserTest {
       System.out.println(xNode.getStringBody());
     }
   }
+
+
+  @Test
+  void test1() throws IOException {
+    String resource = "resources/nodelet_test.xml";
+
+    InputStream resourceAsStream = Resources.getResourceAsStream(resource);
+    XPathParser xPathParser = new XPathParser(resourceAsStream);
+    String s = xPathParser.evalString("/employee/blah/@something");
+    System.out.println(s);
+
+    XNode xNode = xPathParser.evalNode("/employee");
+    System.out.println(xNode.toString());
+  }
+
 
 }

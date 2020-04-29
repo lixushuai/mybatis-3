@@ -1,20 +1,21 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.scripting.xmltags;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Clinton Begin
+ * 承 BaseBuilder 抽象类，XML 动态语句( SQL )构建器，
+ * 负责将 SQL 解析成 SqlSource 对象
  */
 public class XMLScriptBuilder extends BaseBuilder {
 
@@ -64,9 +67,12 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
   public SqlSource parseScriptNode() {
+    //  <1> 解析 SQL
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
+    // <2> 创建 SqlSource 对象
     SqlSource sqlSource;
     if (isDynamic) {
+      // 创建动态SQL对象
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
       sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
@@ -75,29 +81,47 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
   protected MixedSqlNode parseDynamicTags(XNode node) {
+    // <1> 创建 SqlNode 数组
     List<SqlNode> contents = new ArrayList<>();
+    // <2> 遍历 SQL 节点的所有子节点
     NodeList children = node.getNode().getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
+      // 当前子节点
       XNode child = node.newXNode(children.item(i));
+      // <2.1> 如果类型是 Node.CDATA_SECTION_NODE 或者 Node.TEXT_NODE 时
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
+        // <2.1.1> 获得内容
         String data = child.getStringBody("");
+        // <2.1.2> 创建 TextSqlNode 对象
         TextSqlNode textSqlNode = new TextSqlNode(data);
+        // <2.1.2.1> 如果是动态的 TextSqlNode 对象
         if (textSqlNode.isDynamic()) {
+          // 添加到 contents 中
           contents.add(textSqlNode);
+          // 标记为动态 SQL
           isDynamic = true;
         } else {
+          // <2.1.2.2> 如果是非动态的 TextSqlNode 对象
+          // <2.1.2> 创建 StaticTextSqlNode 添加到 contents 中
           contents.add(new StaticTextSqlNode(data));
         }
+        // <2.2> 如果类型是 Node.ELEMENT_NODE
       } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+        // <2.2.1> 根据子节点的标签，获得对应的 NodeHandler 对象
         String nodeName = child.getNode().getNodeName();
+        // 获得不到，说明是未知的标签，抛出 BuilderException 异常
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
           throw new BuilderException("Unknown element <" + nodeName + "> in SQL statement.");
         }
+        // <2.2.2> 执行 NodeHandler 处理
         handler.handleNode(child, contents);
+        // <2.2.3> 标记为动态 SQL
         isDynamic = true;
+
       }
     }
+    // <3> 创建 MixedSqlNode 对象
     return new MixedSqlNode(contents);
   }
 

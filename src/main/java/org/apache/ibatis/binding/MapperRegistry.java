@@ -34,7 +34,7 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperRegistry {
   /**
-   * MyBatis Configuration 对象
+   * MyBatis 全局配置对象 Configuration 对象
    */
   private final Configuration config;
   /**

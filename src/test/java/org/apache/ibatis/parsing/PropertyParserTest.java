@@ -61,8 +61,10 @@ class PropertyParserTest {
   void applyDefaultValue() {
     Properties props = new Properties();
     props.setProperty(PropertyParser.KEY_ENABLE_DEFAULT_VALUE, "true");
+    props.setProperty("tableName","user");
+    props.setProperty("orderColumn","ids");
     Assertions.assertThat(PropertyParser.parse("${key:default}", props)).isEqualTo("default");
-    Assertions.assertThat(PropertyParser.parse("SELECT * FROM ${tableName:users} ORDER BY ${orderColumn:id}", props)).isEqualTo("SELECT * FROM users ORDER BY id");
+    Assertions.assertThat(PropertyParser.parse("SELECT * FROM ${tableName:users} ORDER BY ${orderColumn:id}", props)).isEqualTo("SELECT * FROM user ORDER BY ids");
     Assertions.assertThat(PropertyParser.parse("${key:}", props)).isEmpty();
     Assertions.assertThat(PropertyParser.parse("${key: }", props)).isEqualTo(" ");
     Assertions.assertThat(PropertyParser.parse("${key::}", props)).isEqualTo(":");
